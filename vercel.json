@@ -1,0 +1,13 @@
+{
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install && npm run setup",
+  "framework": null,
+  "outputDirectory": "build/client",
+  "crons": [
+    {
+      "path": "/app/reconciliation-cron",
+      "schedule": "0 */6 * * *"
+    }
+  ]
+}

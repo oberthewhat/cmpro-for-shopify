@@ -1,0 +1,35 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+name = "CMPro for Shopify"
+client_id = "SHOPIFY_API_KEY_PLACEHOLDER"
+application_url = "SHOPIFY_APP_URL_PLACEHOLDER"
+embedded = true
+
+[build]
+automatically_update_urls_on_dev = true
+dev_store_url = ""
+
+[access_scopes]
+# Scopes required by CMPro:
+#   write_content  — create/update blog articles
+#   read_content   — read articles for deduplication + revert
+scopes = "write_content,read_content"
+
+[auth]
+redirect_urls = [
+  "SHOPIFY_APP_URL_PLACEHOLDER/auth/callback",
+  "SHOPIFY_APP_URL_PLACEHOLDER/auth/shopify/callback",
+  "SHOPIFY_APP_URL_PLACEHOLDER/api/auth/callback",
+]
+
+[webhooks]
+api_version = "2025-01"
+
+  # Fires when a merchant edits a blog article — triggers CMPro revert system
+  [[webhooks.subscriptions]]
+  topics = ["articles/update"]
+  uri = "/webhooks/articles-update"
+  compliance_topics = []
+
+[pos]
+embedded = false

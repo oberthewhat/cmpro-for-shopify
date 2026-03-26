@@ -1,0 +1,85 @@
+// prisma/schema.prisma
+//
+// Database schema for CMPro Shopify app.
+// Uses SQLite locally (dev), Postgres or PlanetScale in production.
+//
+// Tables:
+//   Session     — Shopify session storage (required by @shopify/shopify-app-session-storage-prisma)
+//   CmproConfig — Per-shop CMPro configuration (account ID, credentials, settings)
+//   SyncLog     — Persistent sync log (mirrors cmpro_sync_log in wp_options)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ── Shopify Session Storage ─────────────────────────────────────────────────
+// Required shape expected by @shopify/shopify-app-session-storage-prisma
+
+model Session {
+  id            String    @id
+  shop          String
+  state         String
+  isOnline      Boolean   @default(false)
+  scope         String?
+  expires       DateTime?
+  accessToken   String
+  userId        BigInt?
+  firstName     String?
+  lastName      String?
+  email         String?
+  accountOwner  Boolean   @default(false)
+  locale        String?
+  collaborator  Boolean?  @default(false)
+  emailVerified Boolean?  @default(false)
+}
+
+
+// ── CMPro App Config (per shop) ─────────────────────────────────────────────
+// Stores credentials + settings.
+// Equivalent to the wp_options rows prefixed with cmpro_* in the WP plugin.
+
+model CmproConfig {
+  id              Int      @id @default(autoincrement())
+  shop            String   @unique             // Shopify shop domain
+
+  // M360 account credentials
+  accountId       String?                      // M360 account ID
+  accountName     String?                      // Display name
+  clientId        String?                      // OAuth client_id
+  clientSecret    String?                      // OAuth client_secret (store encrypted in prod)
+  accessToken     String?                      // Current access token
+  tokenExpiry     DateTime?                    // Token expiry time
+  webhookSecret   String?                      // HMAC secret for CMPro webhook verification
+
+  // Shopify-side config
+  shopifyBlogId   String?                      // GID of the CMPro blog in this store
+                                               // e.g. gid://shopify/Blog/123456
+
+  // State
+  blogCount       Int      @default(0)         // Count of synced articles
+  lastSyncAt      DateTime?                    // Timestamp of last successful sync
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+
+// ── Sync Log ────────────────────────────────────────────────────────────────
+// Persistent log of CMPro sync activity.
+// Equivalent to cmpro_sync_log in wp_options (but in a proper table).
+// Capped at 500 rows per shop via application logic.
+
+model SyncLog {
+  id        Int      @id @default(autoincrement())
+  shop      String                               // Shopify shop domain
+  level     String   @default("info")            // info | warning | error
+  message   String
+  createdAt DateTime @default(now())
+
+  @@index([shop, createdAt])
+}
