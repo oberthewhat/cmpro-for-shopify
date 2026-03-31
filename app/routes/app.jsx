@@ -1,50 +1,36 @@
-/**
- * app.jsx
- *
- * Nested layout for all /app/* routes (settings, dashboard, sync-log).
- * Wraps the Polaris AppProvider with Shopify App Bridge context,
- * and renders the top navigation.
- *
- * Equivalent to the WP plugin's admin menu registration in class-settings.php.
- */
-
-import { Outlet, useLoaderData, useRouteError } from '@remix-run/react';
-import { boundary }   from '@shopify/shopify-app-remix/server';
-import { AppProvider } from '@shopify/shopify-app-remix/react';
-import { NavMenu }    from '@shopify/app-bridge-react';
-import polarisStyles  from '@shopify/polaris/build/esm/styles.css?url';
-import { json }       from '@remix-run/node';
-import { authenticate } from '../shopify.server.js';
+import { Outlet, useLoaderData, useRouteError } from "react-router";
+import { boundary } from "@shopify/shopify-app-react-router/server";
+import { AppProvider as ShopifyAppProvider } from "@shopify/shopify-app-react-router/react";
+import { AppProvider as PolarisProvider } from "@shopify/polaris";
+import enTranslations from "@shopify/polaris/locales/en.json";
+import { authenticate } from "../shopify.server";
+import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
 
 export const links = () => [
-  { rel: 'stylesheet', href: polarisStyles },
+  { rel: "stylesheet", href: polarisStyles },
 ];
 
 export const loader = async ({ request }) => {
   await authenticate.admin(request);
-  return json({ apiKey: process.env.SHOPIFY_API_KEY || '' });
+  return { apiKey: process.env.SHOPIFY_API_KEY || "" };
 };
 
-export default function AppLayout() {
+export default function App() {
   const { apiKey } = useLoaderData();
-
   return (
-    <AppProvider isEmbeddedApp apiKey={apiKey}>
-
-      {/* Top navigation — equivalent to add_menu_page / add_submenu_page in WP */}
-      <NavMenu>
-        <a href="/app" rel="home">Dashboard</a>
-        <a href="/app/settings">Settings</a>
-        <a href="/app/sync-log">Sync Log</a>
-      </NavMenu>
-
-      <Outlet />
-
-    </AppProvider>
+    <ShopifyAppProvider embedded apiKey={apiKey}>
+      <PolarisProvider i18n={enTranslations}>
+        <s-app-nav>
+          <s-link href="/app">Home</s-link>
+          <s-link href="/app/settings">Settings</s-link>
+          <s-link href="/app/sync-log">Sync Log</s-link>
+        </s-app-nav>
+        <Outlet />
+      </PolarisProvider>
+    </ShopifyAppProvider>
   );
 }
 
-// Shopify-required error boundary for embedded app context
 export function ErrorBoundary() {
   return boundary.error(useRouteError());
 }

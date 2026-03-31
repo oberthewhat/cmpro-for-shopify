@@ -1,15 +1,12 @@
-/**
- * auth.$.jsx
- *
- * Catch-all route for Shopify OAuth.
- * Handles /auth, /auth/callback, /auth/shopify/callback.
- *
- * Standard Shopify CLI scaffold — no CMPro-specific logic.
- */
-
-import { authenticate } from '../shopify.server.js';
+import { boundary } from "@shopify/shopify-app-react-router/server";
+import { authenticate } from "../shopify.server";
 
 export const loader = async ({ request }) => {
   await authenticate.admin(request);
+
   return null;
+};
+
+export const headers = (headersArgs) => {
+  return boundary.headers(headersArgs);
 };

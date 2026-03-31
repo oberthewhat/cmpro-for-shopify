@@ -1,35 +1,52 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-name = "CMPro for Shopify"
-client_id = "SHOPIFY_API_KEY_PLACEHOLDER"
-application_url = "SHOPIFY_APP_URL_PLACEHOLDER"
+client_id = "650bc6af0b41ff5f4886acaa72bd0101"
+name = "cmpro-testing-dev"
+application_url = "https://example.com"
 embedded = true
 
 [build]
 automatically_update_urls_on_dev = true
-dev_store_url = ""
-
-[access_scopes]
-# Scopes required by CMPro:
-#   write_content  — create/update blog articles
-#   read_content   — read articles for deduplication + revert
-scopes = "write_content,read_content"
-
-[auth]
-redirect_urls = [
-  "SHOPIFY_APP_URL_PLACEHOLDER/auth/callback",
-  "SHOPIFY_APP_URL_PLACEHOLDER/auth/shopify/callback",
-  "SHOPIFY_APP_URL_PLACEHOLDER/api/auth/callback",
-]
+include_config_on_deploy = true
 
 [webhooks]
-api_version = "2025-01"
+api_version = "2026-04"
 
-  # Fires when a merchant edits a blog article — triggers CMPro revert system
   [[webhooks.subscriptions]]
-  topics = ["articles/update"]
-  uri = "/webhooks/articles-update"
-  compliance_topics = []
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
 
-[pos]
-embedded = false
+  [[webhooks.subscriptions]]
+  topics = [ "app/scopes_update" ]
+  uri = "/webhooks/app/scopes_update"
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "write_metaobject_definitions,write_metaobjects,write_products,read_content,write_content"
+
+[auth]
+redirect_urls = [ "https://example.com/api/auth" ]
+
+[product.metafields.app.demo_info]
+type = "single_line_text_field"
+name = "Demo Source Info"
+description = "Tracks products created by the Shopify app template for development"
+
+  [product.metafields.app.demo_info.access]
+  admin = "merchant_read_write"
+
+[metaobjects.app.example]
+name = "Example"
+description = "An example metaobject definition created by this template"
+
+  [metaobjects.app.example.access]
+  admin = "merchant_read_write"
+
+[metaobjects.app.example.fields.title]
+name = "Title"
+type = "single_line_text_field"
+required = true
+
+[metaobjects.app.example.fields.description]
+name = "Description"
+type = "multi_line_text_field"

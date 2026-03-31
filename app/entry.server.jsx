@@ -1,41 +1,35 @@
-/**
- * entry.server.jsx
- * Remix server entry point. Handles SSR for embedded Shopify app pages.
- * Standard Shopify CLI scaffold — no CMPro-specific logic here.
- */
+import { PassThrough } from "stream";
+import { renderToPipeableStream } from "react-dom/server";
+import { ServerRouter } from "react-router";
+import { createReadableStreamFromReadable } from "@react-router/node";
+import { isbot } from "isbot";
+import { addDocumentResponseHeaders } from "./shopify.server";
 
-import { PassThrough }                      from 'stream';
-import { renderToPipeableStream }           from 'react-dom/server';
-import { RemixServer }                      from '@remix-run/react';
-import { createReadableStreamFromReadable } from '@remix-run/node';
-import { isbot }                            from 'isbot';
-import { addDocumentResponseHeaders }       from './shopify.server.js';
-
-const ABORT_DELAY = 5_000;
+export const streamTimeout = 5000;
 
 export default async function handleRequest(
   request,
   responseStatusCode,
   responseHeaders,
-  remixContext,
+  reactRouterContext,
 ) {
   addDocumentResponseHeaders(request, responseHeaders);
-
-  const userAgent = request.headers.get('user-agent');
-  const callbackName = isbot(userAgent ?? '') ? 'onAllReady' : 'onShellReady';
+  const userAgent = request.headers.get("user-agent");
+  const callbackName = isbot(userAgent ?? "") ? "onAllReady" : "onShellReady";
 
   return new Promise((resolve, reject) => {
-    const { abort, pipe } = renderToPipeableStream(
-      <RemixServer context={remixContext} url={request.url} abortDelay={ABORT_DELAY} />,
+    const { pipe, abort } = renderToPipeableStream(
+      <ServerRouter context={reactRouterContext} url={request.url} />,
       {
         [callbackName]: () => {
-          const body       = new PassThrough();
-          const stream     = createReadableStreamFromReadable(body);
-          responseHeaders.set('Content-Type', 'text/html');
+          const body = new PassThrough();
+          const stream = createReadableStreamFromReadable(body);
+
+          responseHeaders.set("Content-Type", "text/html");
           resolve(
             new Response(stream, {
               headers: responseHeaders,
-              status:  responseStatusCode,
+              status: responseStatusCode,
             }),
           );
           pipe(body);
@@ -49,6 +43,9 @@ export default async function handleRequest(
         },
       },
     );
-    setTimeout(abort, ABORT_DELAY);
+
+    // Automatically timeout the React renderer after 6 seconds, which ensures
+    // React has enough time to flush down the rejected boundary contents
+    setTimeout(abort, streamTimeout + 1000);
   });
 }

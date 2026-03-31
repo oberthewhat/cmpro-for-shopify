@@ -1,3 +1,4 @@
+const json = (data, init) => Response.json(data, init);
 /**
  * webhooks.cmpro-blog.jsx
  *
@@ -16,12 +17,12 @@
  *   500 — publish failed
  */
 
-import { json }               from '@remix-run/node';
+export const unstable_noClientBundle = true;
 import { unauthenticated }    from '../shopify.server.js';
-import { verifySignature }    from '../lib/signature.server.js';
-import { publishBlog }        from '../lib/publisher.server.js';
-import { cmproLog }           from '../lib/log.server.js';
-import { getSessionData }     from '../lib/session.server.js';
+import { verifySignature }    from '../signature.server.js';
+import { publishBlog }        from '../publisher.server.js';
+import { cmproLog }           from '../log.server.js';
+import { getSessionData }     from '../session.server.js';
 
 // Only POST is valid on this route
 export const action = async ({ request, params }) => {
@@ -82,6 +83,7 @@ export const action = async ({ request, params }) => {
     await publishBlog(admin.graphql, session, blog, cmproBlogId);
 
   } catch (err) {
+    console.error('[CMPro] Publish error:', err);
     await cmproLog(session, `Failed to publish blog ID ${blog.id}: ${err.message}`, 'error');
     return json({ error: 'Publish failed' }, { status: 500 });
   }

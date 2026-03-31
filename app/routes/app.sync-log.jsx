@@ -1,3 +1,4 @@
+const json = (data, init) => Response.json(data, init);
 /**
  * app.sync-log.jsx
  *
@@ -6,22 +7,25 @@
  * timestamps, and a clear log action.
  */
 
-import { json, redirect }             from '@remix-run/node';
-import { useLoaderData, useFetcher }  from '@remix-run/react';
+import { redirect } from 'react-router';
+import { useLoaderData, useFetcher }  from 'react-router';
 import {
   Page, Layout, Card, Text, BlockStack, DataTable,
   Badge, Button, InlineStack, EmptyState,
 } from '@shopify/polaris';
-import { authenticate }  from '../shopify.server.js';
-import { getLog, clearLog } from '../lib/log.server.js';
+// lazy import authenticate }  from '../shopify.server.js';
 
 export const loader = async ({ request }) => {
+  const { authenticate } = await import('../shopify.server.js');
+  const { getLog } = await import('../log.server.js');
   const { session } = await authenticate.admin(request);
   const logs = await getLog(session);
   return json({ logs });
 };
 
 export const action = async ({ request }) => {
+  const { authenticate } = await import('../shopify.server.js');
+  const { clearLog } = await import('../log.server.js');
   const { session } = await authenticate.admin(request);
   const formData = await request.formData();
 
