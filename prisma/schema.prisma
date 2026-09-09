@@ -41,8 +41,11 @@ model CmproConfig {
   clientId        String?
   clientSecret    String?
   accessToken     String?
+  refreshToken    String?
   tokenExpiry     DateTime?
   webhookSecret   String?
+  webhookId       String?
+  installId       String?
   shopifyBlogId   String?
   blogCount       Int       @default(0)
   lastSyncAt      DateTime?

@@ -2,30 +2,29 @@
 
 client_id = "650bc6af0b41ff5f4886acaa72bd0101"
 name = "cmpro-testing-dev"
-application_url = "https://example.com"
+application_url = "https://unpneumatic-simon-predenial.ngrok-free.dev"
 embedded = true
 
 [build]
 automatically_update_urls_on_dev = true
-include_config_on_deploy = true
 
 [webhooks]
 api_version = "2026-04"
 
   [[webhooks.subscriptions]]
-  topics = [ "app/uninstalled" ]
-  uri = "/webhooks/app/uninstalled"
-
-  [[webhooks.subscriptions]]
   topics = [ "app/scopes_update" ]
   uri = "/webhooks/app/scopes_update"
 
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
+
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "write_metaobject_definitions,write_metaobjects,write_products,read_content,write_content"
+scopes = "write_content,write_metaobject_definitions,write_metaobjects,write_products"
 
 [auth]
-redirect_urls = [ "https://example.com/api/auth" ]
+redirect_urls = [ "https://unpneumatic-simon-predenial.ngrok-free.dev/auth/callback" ]
 
 [product.metafields.app.demo_info]
 type = "single_line_text_field"

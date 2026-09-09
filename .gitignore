@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Build output
+build/
+.react-router/
+dist/
+
+# Environment / secrets — NEVER commit
+.env
+.env.*
+!.env.example
+
+# Local database
+prisma/dev.sqlite
+prisma/dev.sqlite-journal
+*.db
+*.sqlite
+
+# Shopify CLI local state
+.shopify/
+
+# Logs / debug
+dev-output.txt
+*.log
+npm-debug.log*
+
+# OS / editor cruft
+.DS_Store
+.vscode/
+.idea/
+
+# Vercel
+.vercel/

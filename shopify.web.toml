@@ -1,0 +1,6 @@
+[roles]
+  web_backend = true
+
+[commands]
+  dev = "npm run vite -- dev"
+  build = "npm run build"

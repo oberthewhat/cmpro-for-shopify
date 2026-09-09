@@ -1,0 +1,8 @@
+{
+  "name": "cmpro-shopify-web",
+  "private": true,
+  "scripts": {
+    "dev": "cd .. && npm run build && node build/server/index.js",
+    "build": "cd .. && npm run build"
+  }
+}

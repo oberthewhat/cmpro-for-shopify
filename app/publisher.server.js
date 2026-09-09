@@ -88,10 +88,23 @@ export async function publishBlog(graphql, session, blog, cmproBlogId) {
     throw new Error('Blog payload is missing required fields (id, title, html_content).');
   }
 
+  // Resolve which Shopify Blog to publish into. If the app settings don't
+  // specify one yet, fall back to the store's first blog (every store has at
+  // least the default "News" blog). This keeps publishing working before the
+  // blog-picker UI is wired up.
+  let targetBlogId = cmproBlogId;
+  if (!targetBlogId) {
+    targetBlogId = await getDefaultBlogId(graphql);
+    if (!targetBlogId) {
+      throw new Error('No Shopify blog found to publish into. Create a blog in Shopify (Online Store → Blog posts) or set one in app settings.');
+    }
+    await cmproLog(session, `No blog configured — defaulting to the store's first blog (${targetBlogId}).`, 'warning');
+  }
+
   // Deduplication — check if this CMPro blog ID already exists
   const existingId = await getExistingArticleId(graphql, blog.id);
 
-  const articleInput = buildArticleInput(blog, cmproBlogId);
+  const articleInput = buildArticleInput(blog, targetBlogId);
 
   let shopifyId;
   let action;
@@ -258,6 +271,30 @@ async function getExistingArticleId(graphql, cmproBlogId) {
 
 
 // ── Utils ───────────────────────────────────────────────────────────────────
+
+/**
+ * Fetch the GID of the store's first blog. Used as a fallback destination
+ * when no blog is configured in app settings. Returns null if the store has
+ * no blogs at all.
+ *
+ * @param {object} graphql
+ * @returns {Promise<string|null>}
+ */
+async function getDefaultBlogId(graphql) {
+  try {
+    const response = await graphql(`
+      query {
+        blogs(first: 1) {
+          edges { node { id title } }
+        }
+      }
+    `);
+    const { data } = await response.json();
+    return data?.blogs?.edges?.[0]?.node?.id || null;
+  } catch {
+    return null;
+  }
+}
 
 function slugify(title) {
   return title
